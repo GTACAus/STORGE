@@ -88,10 +88,9 @@
       if (!updateResponse.ok) throw new Error('Failed to update gist');
 
       input.value = '';
-      alert('Item added! The list will refresh in 5 seconds...');
       
       // Wait 5 seconds before reloading wishlist
-      setTimeout(loadWishlist, 5000);
+      setTimeout(loadWishlist, 9000);
 
     } catch (error) {
       console.error(error);
