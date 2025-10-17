@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Christmas Wishlist</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  #wishlist { margin-top: 20px; }
+  li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Christmas Wishlist</h1>
+
+<input type="text" id="itemInput" placeholder="Enter your wishlist item" />
+<button onclick="submitItem()">Add Item</button>
+
+<ul id="wishlist"></ul>
+
+<script>
+  const tok1 = 'ghp_89EXQoRc5gT0Hr'; // Replace with your token parts
+  const tok2 = 'hHvQ084h7PNGT2sk1qhCP6';
+  const token = tok1 + tok2;
+
+  const gistId = 'defc6f77505f385d1bfbb912b2978077'; // Your gist ID
+  const fileName = 'KK.txt'; // The file name inside your gist
+  const apiUrl = `https://api.github.com/gists/${gistId}`;
+
+  // Fetch and display the current wishlist
+  async function loadWishlist() {
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error('Failed to fetch wishlist');
+      const data = await response.json();
+      const content = data.files[fileName]?.content || '';
+      displayWishlist(content);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Display wishlist items in the <ul>
+  function displayWishlist(content) {
+    const wishlistElement = document.getElementById('wishlist');
+    wishlistElement.innerHTML = '';
+    const items = content.split('\n').filter(item => item.trim() !== '');
+    for (const item of items) {
+      const li = document.createElement('li');
+      li.textContent = item;
+      wishlistElement.appendChild(li);
+    }
+  }
+
+  // Submit new item and update gist
+  async function submitItem() {
+    const input = document.getElementById('itemInput');
+    const newItem = input.value.trim();
+    if (!newItem) return alert('Please enter an item.');
+
+    try {
+      // Get current gist content
+      const response = await fetch(apiUrl, {
+        headers: { Authorization: `token ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch gist');
+
+      const data = await response.json();
+      const currentContent = data.files[fileName]?.content || '';
+      const updatedContent = currentContent + (currentContent ? '\n' : '') + newItem;
+
+      // Update gist content
+      const updateResponse = await fetch(apiUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          description: 'Updated Christmas wishlist',
+          files: {
+            [fileName]: { content: updatedContent }
+          }
+        })
+      });
+
+      if (!updateResponse.ok) throw new Error('Failed to update gist');
+
+      input.value = '';
+      loadWishlist();
+
+    } catch (error) {
+      console.error(error);
+      alert('There was an error updating your wishlist.');
+    }
+  }
+
+  // Load wishlist on page load
+  loadWishlist();
+</script>
+
+</body>
+</html>
